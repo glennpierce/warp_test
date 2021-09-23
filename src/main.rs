@@ -17,17 +17,10 @@ async fn main() {
     let routes = warp::any()
     .map(|| "Hello, World!");
 
-    let (tx, rx) = oneshot::channel::<()>();
-
-    let (addr, server) = warp::serve(routes).bind_with_graceful_shutdown(([127, 0, 0, 1], 3030), async {
-                 rx.await.ok();
+    // let routes_clone
+    let handle = tokio::task::spawn(async move { 
+        warp::serve(routes.clone()).run(([127, 0, 0, 1], 3030)).await
     });
 
-    // Spawn the server into a runtime
-    let s = tokio::task::spawn(server);
-
-    s.await;
-
-    // Later, start the shutdown...
-    //let _ = tx.send(());
+    do_long_runing_thing().await;
 }
